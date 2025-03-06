@@ -15,31 +15,43 @@ import java.util.List;
 @RequestMapping("/api/addresses")
 public class AddressBookController {
 
-    @Autowired
-    private AddressBookService addressBookService;
+    private final AddressBookService service;
 
-    @PostMapping
-    public AddressBookDTO createAddress(@RequestBody AddressBookDTO address) {
-        return addressBookService.createAddress(address);
+    public AddressBookController(AddressBookService service) {
+        this.service = service;
     }
 
+    // GET all addresses
     @GetMapping
     public List<AddressBookDTO> getAllAddresses() {
-        return addressBookService.getAllAddresses();
+        return service.getAllAddresses();
     }
 
+    // GET Address by ID
     @GetMapping("/{id}")
     public ResponseEntity<AddressBookDTO> getAddressById(@PathVariable Long id) {
-        return addressBookService.getAddressById(id);
+        return service.getAddressById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    // POST (Add new Address)
+    @PostMapping
+    public ResponseEntity<AddressBookDTO> addAddress(@RequestBody AddressBookDTO address) {
+        return ResponseEntity.ok(service.addAddress(address));
+    }
+
+    // PUT (Update Address by ID)
     @PutMapping("/{id}")
-    public ResponseEntity<AddressBookDTO> updateAddress(@PathVariable Long id, @RequestBody AddressBookDTO addressDetails) {
-        return addressBookService.updateAddress(id,addressDetails);
+    public ResponseEntity<AddressBookDTO> updateAddress(@PathVariable Long id, @RequestBody AddressBookDTO newAddress) {
+        return service.updateAddress(id, newAddress)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    // DELETE Address by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAddress(@PathVariable Long id) {
-        return addressBookService.deleteAddress(id);
+        return service.deleteAddress(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

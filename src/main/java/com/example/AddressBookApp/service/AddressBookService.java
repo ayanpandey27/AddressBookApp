@@ -7,47 +7,46 @@ import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AddressBookService {
+    private final List<AddressBookDTO> addressList = new ArrayList<>();
+    private Long idCounter = 1L;
 
-    @Autowired
-    private AddressBookRepo repository;
+    // Get all addresses
+    public List<AddressBookDTO> getAllAddresses() {
+        return addressList;
+    }
 
-    public AddressBookDTO createAddress(AddressBookDTO address)
-    {
-        return repository.save(address);
+    // Get Address by ID
+    public Optional<AddressBookDTO> getAddressById(Long id) {
+        return addressList.stream()
+                .filter(entry -> entry.getId().equals(id))
+                .findFirst();
     }
-    public List<AddressBookDTO> getAllAddresses()
-    {
-        return repository.findAll();
+
+    // Add a new Address
+    public AddressBookDTO addAddress(AddressBookDTO address) {
+        address.setId(idCounter++); // Assign ID manually
+        addressList.add(address);
+        return address;
     }
-    public ResponseEntity<AddressBookDTO> getAddressById(Long id)
-    {
-        return
-                repository.findById(id)
-                        .map(ResponseEntity::ok)
-                        .orElse(ResponseEntity.notFound().build());
+
+    // Update Address by ID
+    public Optional<AddressBookDTO> updateAddress(Long id, AddressBookDTO newAddress) {
+        return getAddressById(id).map(existing -> {
+            existing.setName(newAddress.getName());
+            existing.setPhone(newAddress.getPhone());
+            existing.setEmail(newAddress.getEmail());
+            return existing;
+        });
     }
-    public ResponseEntity<AddressBookDTO> updateAddress(Long id ,AddressBookDTO addressDetails)
-    {
-        return repository.findById(id)
-                .map(address -> {
-                    address.setName(addressDetails.getName());
-                    address.setPhone(addressDetails.getPhone());
-                    address.setEmail(addressDetails.getEmail());
-                    address.setAddress(addressDetails.getAddress());
-                    return ResponseEntity.ok(repository.save(address));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-    public ResponseEntity<Void> deleteAddress(Long id)
-    {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+
+    // Delete Address by ID
+    public boolean deleteAddress(Long id) {
+        return addressList.removeIf(entry -> entry.getId().equals(id));
     }
 }
