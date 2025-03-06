@@ -1,6 +1,7 @@
 package com.example.AddressBookApp.controller;
 
 
+import com.example.AddressBookApp.dto.AddressBookDTO;
 import com.example.AddressBookApp.model.AddressBookModel;
 import com.example.AddressBookApp.repository.AddressBookRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,24 +18,24 @@ public class AddressBookController {
     private AddressBookRepo repository;
 
     @PostMapping
-    public AddressBookModel createAddress(@RequestBody AddressBookModel address) {
+    public AddressBookDTO createAddress(@RequestBody AddressBookDTO address) {
         return repository.save(address);
     }
 
     @GetMapping
-    public List<AddressBookModel> getAllAddresses() {
+    public List<AddressBookDTO> getAllAddresses() {
         return repository.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AddressBookModel> getAddressById(@PathVariable Long id) {
+    public ResponseEntity<AddressBookDTO> getAddressById(@PathVariable Long id) {
         return repository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AddressBookModel> updateAddress(@PathVariable Long id, @RequestBody AddressBookModel addressDetails) {
+    public ResponseEntity<AddressBookDTO> updateAddress(@PathVariable Long id, @RequestBody AddressBookDTO addressDetails) {
         return repository.findById(id)
                 .map(address -> {
                     address.setName(addressDetails.getName());
